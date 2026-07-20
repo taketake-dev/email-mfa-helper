@@ -1,0 +1,12 @@
+:root { color: #13233a; background: #f4f7fb; font-family: system-ui, sans-serif; line-height: 1.7; }
+body { margin: 0; }
+main { max-width: 720px; margin: 48px auto; padding: 36px; background: #fff; border-radius: 16px; box-shadow: 0 8px 30px #13233a18; }
+h1, h2 { line-height: 1.25; }
+h1 { margin-top: 0; font-size: clamp(2rem, 7vw, 3rem); }
+h2 { margin-top: 2rem; }
+a { color: #075cc5; }
+.eyebrow { color: #0b6e69; font-weight: 700; }
+.lead { font-size: 1.2rem; }
+.notice { padding: 4px 20px; border-left: 4px solid #0b6e69; background: #f0fbfa; }
+nav { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 32px; }
+@media (max-width: 640px) { main { margin: 0; border-radius: 0; padding: 24px; } }

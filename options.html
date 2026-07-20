@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Email MFA Helper の設定</title>
+    <style>
+      body { max-width: 640px; margin: 48px auto; padding: 0 20px; color: #13233a; font: 16px/1.6 system-ui, sans-serif; }
+      button { padding: 8px 12px; border: 1px solid #b42318; border-radius: 6px; background: #fff; color: #8a1c14; font: inherit; cursor: pointer; }
+      button:disabled { cursor: wait; opacity: .6; }
+      .notice { padding: 12px; border-left: 4px solid #0d6efd; background: #f8fbff; }
+    </style>
+  </head>
+  <body>
+    <h1>Email MFA Helper の設定</h1>
+    <p class="notice" id="consent-status" aria-live="polite">確認しています。</p>
+    <button id="revoke-consent" type="button">同意を取り消す</button>
+    <p>同意を取り消すと、以後はOutlook Webの認証メールを自動確認しません。再度利用する場合は、Moodleの認証画面で改めて同意します。</p>
+    <p><a href="https://taketake-dev.github.io/email-mfa-helper/privacy.html" target="_blank" rel="noreferrer">プライバシーポリシー</a></p>
+    <script type="module" src="src/options.js"></script>
+  </body>
+</html>

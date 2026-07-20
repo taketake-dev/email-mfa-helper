@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>プライバシーポリシー | Email MFA Helper</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main>
+      <p><a href="index.html">Email MFA Helper</a></p>
+      <h1>プライバシーポリシー</h1>
+      <p>最終更新日: 2026-07-21</p>
+
+      <h2>扱う情報</h2>
+      <p>利用者がMoodleの二段階認証画面で明示同意した場合に限り、拡張機能はOutlook Webの受信トレイ一覧から、対象メールを判別するための送信元、件名、受信日時、および一覧行に表示されるテキストから抽出した6桁認証コードを一時処理します。パスワード、認証用リンク、メール本文を開いた内容は扱いません。</p>
+
+      <h2>利用目的</h2>
+      <p>取得した6桁認証コードを、利用者が表示したMoodleの二段階認証入力欄へ設定するためだけに使用します。Moodleの送信ボタンは操作しません。</p>
+
+      <h2>保存期間と送信</h2>
+      <p>認証コード、メール一覧の情報、メール本文、パスワードは保存しません。コードは入力処理の間だけ拡張機能内で扱います。利用者の同意状態だけをChromeの端末内ストレージに保存し、利用者が設定画面で取り消すか拡張機能を削除するまで保持します。実行中のタブIDと時刻はChromeのセッションストレージにだけ保持し、取得成功、時間切れ、対象タブ終了、またはブラウザ終了時に削除されます。</p>
+      <p>情報を開発者、第三者、外部サーバーへ送信、販売、共有しません。Microsoft Graph API、メール転送、独自バックエンドも使用しません。</p>
+
+      <h2>同意と取り消し</h2>
+      <p>自動確認は、Moodleの認証画面で利用者が内容を確認して同意した後にだけ始まります。同意しない場合はOutlook Webを開きません。同意は拡張機能の設定画面からいつでも取り消せます。</p>
+
+      <h2>問い合わせ先</h2>
+      <p>不具合報告や問い合わせは、<a href="https://github.com/taketake-dev/email-mfa-helper/issues">GitHub Issues</a>へ送ってください。認証コード、パスワード、メール本文などの機密情報はIssueに書き込まないでください。</p>
+
+      <h2>非公式ツールであること</h2>
+      <p>Email MFA Helperは、大学、Moodle、Microsoftとは提携・承認関係にない個人開発の拡張機能です。</p>
+    </main>
+  </body>
+</html>
