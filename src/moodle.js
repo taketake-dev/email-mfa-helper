@@ -9,6 +9,7 @@ const CODE_INPUT_SELECTOR = [
 ].join(", ");
 
 let detectionState = "idle";
+let mfaScreenDetectedAt = null;
 
 function getPanel() {
   let panel = document.getElementById("email-mfa-helper-status");
@@ -64,7 +65,10 @@ function showConsent() {
     decline.disabled = true;
     let result = null;
     try {
-      result = await chrome.runtime.sendMessage({ type: "MFA_CONSENT_GRANTED" });
+      result = await chrome.runtime.sendMessage({
+        type: "MFA_CONSENT_GRANTED",
+        detectedAt: mfaScreenDetectedAt
+      });
     } catch {
       // バックグラウンド処理が利用できない場合は再試行を案内する。
     }
@@ -104,7 +108,8 @@ function detectMfaScreen() {
   }
 
   detectionState = "checking";
-  chrome.runtime.sendMessage({ type: "MFA_SCREEN_DETECTED" });
+  mfaScreenDetectedAt ??= Date.now();
+  chrome.runtime.sendMessage({ type: "MFA_SCREEN_DETECTED", detectedAt: mfaScreenDetectedAt });
 }
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {

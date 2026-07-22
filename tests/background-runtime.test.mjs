@@ -107,6 +107,22 @@ test("同意撤回でOutlook監視を即時停止し、タブを残す", async (
   ));
 });
 
+test("初回同意が遅れても認証画面の検出時刻をメールの新着判定に使う", async () => {
+  resetRuntime();
+  runtimeState.session = {};
+  const detectedAt = new Date("2026-07-23T12:00:30").getTime();
+
+  assert.deepEqual(
+    await dispatch({ type: "MFA_SCREEN_DETECTED", detectedAt }, { tab: { id: 11 } }),
+    { ok: false, consentRequired: true }
+  );
+  assert.deepEqual(
+    await dispatch({ type: "MFA_CONSENT_GRANTED", detectedAt }, { tab: { id: 11 } }),
+    { ok: true, outlookTabId: 22 }
+  );
+  assert.equal(runtimeState.session.mfaSession.startedAt, detectedAt);
+});
+
 test("Moodleへの入力成功時だけOutlookタブを閉じる", async () => {
   resetRuntime({ insertResult: { ok: true } });
 

@@ -73,8 +73,12 @@ async function createSession(session) {
   return activeSession;
 }
 
-async function startMfaSession(moodleTabId) {
-  const session = await createSession({ moodleTabId, startedAt: Date.now() });
+function getMfaScreenDetectedAt(value) {
+  return typeof value === "number" && Number.isFinite(value) ? value : Date.now();
+}
+
+async function startMfaSession(moodleTabId, startedAt = Date.now()) {
+  const session = await createSession({ moodleTabId, startedAt });
   await sendStatus(moodleTabId, "Outlook Webを開いています", "認証メールを待機します。");
   return session;
 }
@@ -118,7 +122,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           sendResponse({ ok: false, consentRequired: true });
           return;
         }
-        const session = await startMfaSession(sender.tab.id);
+        const session = await startMfaSession(
+          sender.tab.id,
+          getMfaScreenDetectedAt(message.detectedAt)
+        );
         sendResponse({ ok: true, outlookTabId: session.outlookTabId });
       })
       .catch(() => sendResponse({ ok: false }));
@@ -131,7 +138,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return;
     }
     grantMfaConsent()
-      .then(() => startMfaSession(sender.tab.id))
+      .then(() => startMfaSession(sender.tab.id, getMfaScreenDetectedAt(message.detectedAt)))
       .then((session) => sendResponse({ ok: true, outlookTabId: session.outlookTabId }))
       .catch(() => sendResponse({ ok: false }));
     return true;

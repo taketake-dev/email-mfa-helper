@@ -26,6 +26,7 @@ test("同意前はOutlook Webを開かず、同意後だけ開始する", () => 
   assert.match(background, /if \(!granted\) \{[\s\S]*?type: "MFA_CONSENT_REQUIRED"/);
   assert.match(background, /message\?\.type === "MFA_CONSENT_GRANTED"/);
   assert.match(background, /grantMfaConsent\(\)[\s\S]*?startMfaSession/);
+  assert.match(background, /getMfaScreenDetectedAt\(message\.detectedAt\)/);
 });
 
 test("同意撤回では監視を止め、Outlookタブは残す", () => {
