@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Email MFA Helper",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "RD講義資料ページのメール認証コード入力を補助します。",
   "icons": {
     "16": "assets/icons/icon-16.png",
@@ -9,7 +9,7 @@
     "48": "assets/icons/icon-48.png",
     "128": "assets/icons/icon-128.png"
   },
-  "permissions": ["alarms", "storage", "tabs"],
+  "permissions": ["alarms", "storage"],
   "host_permissions": [
     "https://lms.rd.dendai.ac.jp/*",
     "https://outlook.office.com/*",

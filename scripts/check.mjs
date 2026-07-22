@@ -12,10 +12,9 @@ function assert(condition, message) {
 
 assert(manifest.manifest_version === 3, "Manifest V3ではありません。");
 assert(manifest.background?.service_worker, "Service Workerが指定されていません。");
-assert(manifest.permissions?.includes("tabs"), "tabs権限がありません。");
 assert(manifest.permissions?.includes("storage"), "storage権限がありません。");
 assert(manifest.permissions?.includes("alarms"), "alarms権限がありません。");
-assert(manifest.version === "1.0.0", "公開候補のバージョンではありません。");
+assert(manifest.version === "1.0.1", "公開候補のバージョンではありません。");
 assert(manifest.options_ui?.page === "options.html", "同意設定画面が指定されていません。");
 assert(manifest.icons?.[128] === "assets/icons/icon-128.png", "128pxアイコンが指定されていません。");
 

@@ -8,8 +8,8 @@ const manifest = JSON.parse(readFileSync(resolve(root, "manifest.json"), "utf8")
 
 test("Manifestが必要な権限と参照先を持つ", () => {
   assert.equal(manifest.manifest_version, 3);
-  assert.equal(manifest.version, "1.0.0");
-  assert.deepEqual(manifest.permissions, ["alarms", "storage", "tabs"]);
+  assert.equal(manifest.version, "1.0.1");
+  assert.deepEqual(manifest.permissions, ["alarms", "storage"]);
   assert.ok(manifest.host_permissions.includes("https://outlook.office.com/*"));
   assert.ok(manifest.host_permissions.includes("https://outlook.cloud.microsoft/*"));
   assert.equal(manifest.action, undefined);
