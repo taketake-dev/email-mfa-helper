@@ -4,7 +4,6 @@ import { grantMfaConsent, hasMfaConsent, revokeMfaConsent } from "./consent.js";
 const { outlookInboxUrl: OUTLOOK_INBOX_URL, waitTimeoutMs: WAIT_TIMEOUT_MS } =
   globalThis.MoodleMfaHelperConfig;
 const SESSION_KEY = "mfaSession";
-const TIMEOUT_ALARM = "mfa-session-timeout";
 const WAIT_TIMEOUT_SECONDS = WAIT_TIMEOUT_MS / 1_000;
 const TIMEOUT_MESSAGE =
   "対象の認証メールを10秒間確認しましたが、見つかりませんでした。対象の認証メールがまだ届いていないか、先に発行された認証コードが10分間有効なため、新しいメールが送信されていない可能性があります。Outlook Webで認証メールをご確認ください。";
@@ -24,9 +23,18 @@ async function closeOutlookTab(tabId) {
   }
 }
 
-async function clearSession({ closeTab = false } = {}) {
+async function stopOutlookWatch(tabId) {
+  if (typeof tabId !== "number") return;
+  try {
+    await chrome.tabs.sendMessage(tabId, { type: "STOP_MFA_WATCH" });
+  } catch {
+    // タブが閉じられた場合やスクリプトが終了済みの場合は何もしない。
+  }
+}
+
+async function clearSession({ closeTab = false, stopWatch = true } = {}) {
   const session = await getSession();
-  await chrome.alarms.clear(TIMEOUT_ALARM);
+  if (stopWatch) await stopOutlookWatch(session?.outlookTabId);
   await chrome.storage.session.remove(SESSION_KEY);
   if (closeTab) await closeOutlookTab(session?.outlookTabId);
 }
@@ -84,7 +92,6 @@ async function beginOutlookWatch(session) {
     });
     const watchingSession = { ...session, watchStartedAt: Date.now() };
     await chrome.storage.session.set({ [SESSION_KEY]: watchingSession });
-    await chrome.alarms.create(TIMEOUT_ALARM, { when: Date.now() + WAIT_TIMEOUT_MS });
     await sendStatus(
       session.moodleTabId,
       "認証メールを待機中",
@@ -135,7 +142,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       .then(async () => {
         const session = await getSession();
         if (session) {
-          await sendStatus(session.moodleTabId, "自動取得を停止しました", "Outlook Webの確認は行いません。");
+          await sendStatus(session.moodleTabId, "自動取得を停止しました", "Outlook Webの確認を停止しました。");
         }
         await clearSession({ closeTab: false });
         sendResponse({ ok: true });
@@ -162,6 +169,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       .then(async (session) => {
         if (!session || sender.tab?.id !== session.outlookTabId) return;
         await sendStatus(session.moodleTabId, "Outlook Webを確認できません", message.detail);
+        await activateMoodleTab(session.moodleTabId);
+        await clearSession({ closeTab: false });
       })
       .catch(() => {});
     return;
@@ -175,7 +184,28 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           return;
         }
 
-        await chrome.tabs.sendMessage(session.moodleTabId, { type: "INSERT_MFA_CODE", code: message.code });
+        let inputResult = null;
+        try {
+          inputResult = await chrome.tabs.sendMessage(session.moodleTabId, {
+            type: "INSERT_MFA_CODE",
+            code: message.code
+          });
+        } catch {
+          // Moodle側が遷移・変更されて入力できない場合は手動確認へ切り替える。
+        }
+
+        if (inputResult?.ok !== true) {
+          await sendStatus(
+            session.moodleTabId,
+            "認証コードを入力できませんでした",
+            "Outlook Webで認証メールを確認し、コードを手動で入力してください。"
+          );
+          await activateMoodleTab(session.moodleTabId);
+          await clearSession({ closeTab: false });
+          sendResponse({ ok: false, inputFailed: true });
+          return;
+        }
+
         await activateMoodleTab(session.moodleTabId);
         await clearSession({ closeTab: true });
         sendResponse({ ok: true });
@@ -195,12 +225,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       .catch(() => sendResponse({ ok: false }));
     return true;
   }
-});
-
-chrome.alarms.onAlarm.addListener(async (alarm) => {
-  if (alarm.name !== TIMEOUT_ALARM) return;
-  const session = await getSession();
-  await finishWithoutCode(session);
 });
 
 chrome.tabs.onRemoved.addListener(async (tabId) => {

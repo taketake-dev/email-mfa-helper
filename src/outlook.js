@@ -1,5 +1,6 @@
 const OUTLOOK_MESSAGE_LIST_SELECTOR = '[role="listbox"]';
 const { senderAddress: SENDER_ADDRESS, subject: SUBJECT } = globalThis.MoodleMfaHelperConfig;
+const SENDER_SELECTOR = `[title="${SENDER_ADDRESS}"]`;
 const logic = globalThis.MoodleMfaHelperOutlookLogic;
 if (!logic) {
   chrome.runtime.sendMessage({
@@ -30,13 +31,20 @@ function findFreshCode(startedAt) {
   const rows = [...document.querySelectorAll('[role="option"]')];
 
   for (const row of rows) {
-    const hasSender = [...row.querySelectorAll("[title]")]
-      .some((element) => element.getAttribute("title") === SENDER_ADDRESS);
+    const hasSender = row.querySelector(SENDER_SELECTOR) !== null;
+    if (!hasSender) {
+      continue;
+    }
+
     const hasSubject = [...row.querySelectorAll("*")]
       .some((element) => element.textContent?.trim() === SUBJECT);
+    if (!hasSubject) {
+      continue;
+    }
+
     const receivedAt = parseReceivedAt(row);
 
-    if (!hasSender || !hasSubject || receivedAt === null) {
+    if (receivedAt === null) {
       continue;
     }
 
@@ -85,6 +93,12 @@ function startWatching({ startedAt, timeoutMs }) {
 }
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message?.type === "STOP_MFA_WATCH") {
+    stopWatching();
+    sendResponse({ ok: true });
+    return;
+  }
+
   if (message?.type !== "START_MFA_WATCH") {
     return;
   }

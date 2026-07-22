@@ -50,7 +50,7 @@ function showConsent() {
   const title = document.createElement("strong");
   title.textContent = "Email MFA Helper: 自動取得の利用確認";
   const description = document.createElement("p");
-  description.textContent = "Outlook Webの受信トレイ一覧から、指定送信元・件名の認証メールと6桁コードを端末内で一時的に確認し、Moodleのコード欄へ入力します。メール本文・パスワード・認証コードは保存または外部送信しません。";
+  description.textContent = "Outlook Webの受信トレイ一覧から、対象メールの送信元・件名・受信日時・一覧行に表示されるテキスト（本文プレビューを含む場合があります）を端末内で一時処理し、6桁コードをMoodleのコード欄へ入力します。入力後はMoodle側の仕様により自動送信されます。対象行以外のメール本文は開かず、処理した情報・パスワード・認証コードを保存、外部送信、第三者共有せず、開発者が閲覧することもありません。";
   const accept = document.createElement("button");
   accept.type = "button";
   accept.textContent = "同意して自動取得を使う";
@@ -62,7 +62,12 @@ function showConsent() {
   accept.addEventListener("click", async () => {
     accept.disabled = true;
     decline.disabled = true;
-    const result = await chrome.runtime.sendMessage({ type: "MFA_CONSENT_GRANTED" });
+    let result = null;
+    try {
+      result = await chrome.runtime.sendMessage({ type: "MFA_CONSENT_GRANTED" });
+    } catch {
+      // バックグラウンド処理が利用できない場合は再試行を案内する。
+    }
     if (!result?.ok) {
       detectionState = "idle";
       showStatus("自動取得を開始できません", "ページを再読み込みしてから再試行してください。");

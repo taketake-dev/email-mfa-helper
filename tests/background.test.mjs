@@ -14,7 +14,8 @@ test("Outlook Webの専用タブを前面で開く", () => {
 });
 
 test("通常のMoodle認証では取得コードを入力欄へ渡す", () => {
-  assert.match(background, /type: "INSERT_MFA_CODE", code: message\.code/);
+  assert.match(background, /type: "INSERT_MFA_CODE",[\s\S]*?code: message\.code/);
+  assert.match(background, /if \(inputResult\?\.ok !== true\)/);
   assert.match(background, /await activateMoodleTab\(session\.moodleTabId\);/);
   assert.match(background, /chrome\.tabs\.update\(tabId, \{ active: true \}\)/);
   assert.doesNotMatch(background, /DEBUG_MODE|OUTLOOK_DEBUG|START_OUTLOOK_DEBUG_EXPERIMENT/);
@@ -31,14 +32,13 @@ test("同意撤回では監視を止め、Outlookタブは残す", () => {
   assert.match(background, /message\?\.type === "MFA_CONSENT_REVOKED"/);
   assert.match(background, /revokeMfaConsent\(\)/);
   assert.match(background, /await clearSession\(\{ closeTab: false \}\)/);
+  assert.match(background, /type: "STOP_MFA_WATCH"/);
 });
 
 test("待機時間は設定ファイルから取得する", () => {
   assert.match(background, /import "\.\/config\.js"/);
   assert.match(background, /waitTimeoutMs: WAIT_TIMEOUT_MS/);
-  assert.match(background, /await chrome\.alarms\.create\(TIMEOUT_ALARM, \{ when: Date\.now\(\) \+ WAIT_TIMEOUT_MS \}\)/);
-  const createSession = background.match(/async function createSession\(session\) \{[\s\S]*?\n\}/)?.[0] ?? "";
-  assert.doesNotMatch(createSession, /chrome\.alarms\.create/);
+  assert.doesNotMatch(background, /chrome\.alarms|TIMEOUT_ALARM/);
   assert.doesNotMatch(background, /chrome\.tabs\.onUpdated\.addListener/);
 });
 

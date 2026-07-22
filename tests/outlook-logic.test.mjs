@@ -9,6 +9,7 @@ const source = readFileSync(resolve(root, "src/outlook-logic.js"), "utf8");
 const context = { globalThis: {} };
 vm.runInNewContext(source, context);
 const logic = context.globalThis.MoodleMfaHelperOutlookLogic;
+const outlookSource = readFileSync(resolve(root, "src/outlook.js"), "utf8");
 
 test("認証コードの前後文から6桁コードを抽出する", () => {
   assert.equal(logic.findCodeInText("あなたの認証コードです。 123456 コードは10分有効です。"), "123456");
@@ -28,4 +29,17 @@ test("分単位表示を考慮して新着メールを判定する", () => {
   assert.equal(logic.floorToMinute(startedAt), sameMinute);
   assert.equal(logic.isFreshReceivedAt(sameMinute, startedAt), true);
   assert.equal(logic.isFreshReceivedAt(previousMinute, startedAt), false);
+});
+
+test("送信元が一致した行だけ件名と本文相当テキストを確認する", () => {
+  const senderCheck = outlookSource.indexOf("if (!hasSender)");
+  const subjectRead = outlookSource.indexOf("const hasSubject");
+  const rowTextRead = outlookSource.indexOf("const code = findCode(row);");
+  assert.ok(senderCheck >= 0);
+  assert.ok(subjectRead > senderCheck);
+  assert.ok(rowTextRead > subjectRead);
+});
+
+test("監視停止メッセージでタイマーを解除する", () => {
+  assert.match(outlookSource, /message\?\.type === "STOP_MFA_WATCH"[\s\S]*?stopWatching\(\)/);
 });
